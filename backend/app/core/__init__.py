@@ -1,0 +1,1 @@
+"""VentureMind AI — Core package"""
