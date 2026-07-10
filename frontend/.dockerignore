@@ -1,0 +1,16 @@
+# Ignore local node packages & build directories
+node_modules/
+dist/
+build/
+.git
+
+# Ignore local environments & credentials
+.env
+.env.*
+*.local
+
+# Ignore IDE configs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
