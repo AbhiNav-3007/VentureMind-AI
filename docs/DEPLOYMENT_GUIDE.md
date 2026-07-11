@@ -1,105 +1,85 @@
-# Deploying VentureMind AI for Free
+# Deploying VentureMind AI for Free (Render & Vercel)
 
-This guide walks you through deploying the VentureMind AI application using a **hybrid free hosting model**:
-1. **Database:** Hosted on **Neon.tech** (100% Free PostgreSQL).
-2. **Backend (FastAPI) & Frontend (React/Nginx):** Hosted on **IBM Cloud Code Engine** (serverless container hosting covered by your IBM Cloud Trial/Lite quotas).
-3. **AI & Storage Services:** Hosted on **IBM watsonx.ai, Watson Discovery, and Cloud Object Storage (COS)** (using IBM Cloud Lite plan tiers).
+This guide walks you through deploying the VentureMind AI application using a **100% free hybrid hosting model** (no credit card required):
+1. **Database:** Hosted on **Supabase** (Lifetime Free PostgreSQL).
+2. **Backend (FastAPI):** Hosted on **Render** (Free Web Service via Docker).
+3. **Frontend (React):** Hosted on **Vercel** (Free Vite/React deployment).
+4. **AI & Storage Services:** Hosted on **IBM Cloud Lite** plans (watsonx.ai and Cloud Object Storage).
 
 ---
 
 ## Prerequisites
 
 Before starting, ensure you have:
-- A **GitHub account** with your VentureMind AI codebase pushed to a private or public repository.
-- An **IBM Cloud Account** (your active Trial plan).
-- A free account on **[Neon.tech](https://neon.tech/)** or **[Supabase](https://supabase.com/)**.
+- A **GitHub account** with your VentureMind AI codebase pushed to a repository.
+- An **IBM Cloud Account** (your active Trial/Lite plan for watsonx.ai keys).
+- A free account on **[Supabase](https://supabase.com/)** and **[Render](https://render.com/)**.
+- A free account on **[Vercel](https://vercel.com/)**.
 
 ---
 
-## STEP 1 — Create a Free PostgreSQL Database
+## STEP 1 — Create a Free Database on Supabase
 
-Since IBM Cloud does not offer a free tier for PostgreSQL, we will use **Neon** (or Supabase).
-
-1. Log in to **[Neon.tech](https://neon.tech/)**.
-2. Click **Create a Project**.
-3. Name your project (e.g., `venturemind-db`) and select a region closest to you.
-4. Once created, copy the **Connection String** from the dashboard.
-5. Convert the protocol:
-   - Your copied URL might look like: `postgresql://user:password@ep-xxxx.neon.tech/neondb`
-   - You **MUST** change `postgresql://` to `postgresql+asyncpg://` so that the FastAPI async database driver works:
-     ```
-     postgresql+asyncpg://user:password@ep-xxxx.neon.tech/neondb?sslmode=require
-     ```
-   - Keep this URL safe; we will use it as your `DATABASE_URL` environment variable.
+1. Log in to **[Supabase](https://supabase.com/)**.
+2. Click **New Project** and select your organization.
+3. Choose a project name (e.g., `VentureMind-DB`), set a secure database password, and select a region closest to your users.
+4. Click **Create new project** and wait for the database to provision (takes about 1 minute).
+5. Once ready, go to **Project Settings** (gear icon in the sidebar) → **Database**.
+6. Scroll down to the **Connection string** section and click on the **URI** tab.
+7. Copy the connection string. It will look like this:
+   ```
+   postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+   ```
+8. Replace `[YOUR-PASSWORD]` with your actual database password.
+9. Convert the protocol from `postgresql://` to `postgresql+asyncpg://` so that the FastAPI async driver functions correctly:
+   ```
+   postgresql+asyncpg://postgres.[YOUR-PROJECT-REF]:your_password@aws-0-[REGION].pooler.supabase.com:6543/postgres
+   ```
+10. Save this database connection string. We will set it as the `DATABASE_URL` environment variable on Render.
 
 ---
 
-## STEP 2 — Deploy the FastAPI Backend on IBM Cloud Code Engine
+## STEP 2 — Deploy the FastAPI Backend on Render
 
-**IBM Cloud Code Engine** runs containerized applications directly from your GitHub repository.
+Render runs containerized applications directly from your GitHub repository using Docker.
 
-1. Go to the **[IBM Cloud Console](https://cloud.ibm.com/)**.
-2. Search the catalog for **Code Engine** and click on it.
-3. Click **Projects** in the left menu and click **Create**.
-   - Name your project (e.g., `venturemind-project`).
-   - Select your location (e.g., `Dallas` or `Frankfurt`).
-   - Click **Create**.
-4. Once the project status shows as *Active*, click on it to open the dashboard.
-5. Select **Applications** in the left menu and click **Create**.
-6. Set the configuration details:
+1. Log in to **[Render.com](https://render.com/)** (sign in using your GitHub account for easy access).
+2. Click **New +** in the top right corner and select **Web Service**.
+3. Select **Connect repository** and choose your `VentureMind-AI` repository.
+4. Configure the Web Service:
    - **Name:** `venturemind-backend`
-   - **Choose how to run your code:** Select **Source code**.
-   - **Code repo URL:** Enter your GitHub repository URL (e.g., `https://github.com/your-username/venturemind-ai`).
-   - *Note: If your repository is private, you will need to create and select a SSH/Git access token.*
-   - Click **Specify build details**:
-     - **Branch name:** `main`
-     - **Context directory:** `backend/` (Crucial: this points Code Engine to the Python app).
-     - **Dockerfile:** `Dockerfile`
-     - Click **Next** → **Finish**.
-7. Under **Runtime settings**:
-   - Set **Listening port:** `8000`
-   - Set resources: **0.25 vCPU / 0.5 GB memory** (this keeps resource usage minimal and free).
-8. Under **Environment variables (optional)**, click **Add** to specify your configuration keys from your local `.env`:
-   - `DATABASE_URL` (your Neon connection string from Step 1)
-   - `IBM_WATSONX_URL`
-   - `IBM_WATSONX_API_KEY`
-   - `IBM_WATSONX_PROJECT_ID`
-   - `IBM_GRANITE_MODEL_ID`
-   - `IBM_DISCOVERY_API_KEY`
-   - `IBM_DISCOVERY_URL`
-   - `IBM_COS_API_KEY`
-   - `IBM_COS_BUCKET_NAME`
-9. Click **Create** to launch the build.
-10. Once the build finishes, copy the **Application URL** generated at the top (e.g., `https://venturemind-backend.xxxx.codeengine.appdomain.cloud`). This is your live backend endpoint!
+   - **Region:** Select a location closest to you (e.g., Singapore or Oregon).
+   - **Branch:** `main`
+   - **Root Directory:** `backend` *(Crucial: this tells Render to focus on the backend folder)*
+   - **Runtime:** `Docker` *(Render will automatically detect the Dockerfile inside backend/)*
+5. Scroll down to the **Instance Type** section and verify that the **Free** tier is selected.
+6. Click **Advanced** and add the following **Environment Variables**:
+   - `DATABASE_URL` — *(Your converted Supabase connection string from Step 1)*
+   - `IBM_WATSONX_URL` — `https://us-south.ml.cloud.ibm.com`
+   - `IBM_WATSONX_API_KEY` — *(Your watsonx.ai API Key)*
+   - `IBM_WATSONX_PROJECT_ID` — *(Your watsonx.ai Project ID)*
+   - `IBM_GRANITE_MODEL_ID` — `ibm/granite-3-8b-instruct` *(Recommended Granite-3 model)*
+   - `IBM_COS_API_KEY` — *(Your Cloud Object Storage API Key)*
+   - `IBM_COS_BUCKET_NAME` — *(Your COS Bucket Name)*
+7. Click **Deploy Web Service**.
+8. Render will build your Docker container. Once the build completes and states *Live*, copy your backend URL from the top of the page (e.g., `https://venturemind-backend.onrender.com`).
 
 ---
 
-## STEP 3 — Connect and Deploy the Frontend
+## STEP 3 — Deploy the React Frontend on Vercel
 
-Now that your backend is running, we need to tell the frontend React client where to send API requests.
+Vercel is the premier platform for hosting static Vite/React applications.
 
-### 1. Update the Frontend Config
-In your local workspace:
-- Open [`frontend/src/services/api.ts`](file:///d:/STUDY%20MATERIAL/Internship/IBM%20skillbuild%20internship/IBM%20BOB%20INTERNSHIP%20PROJECT/venturemind-ai/frontend/src/services/api.ts) or your `.env` configuration.
-- Update the base URL pointing to the Code Engine backend URL you copied in the previous step.
-- Save, commit, and push this change to your GitHub repository.
-
-### 2. Deploy Frontend to Code Engine
-1. Return to your **Code Engine Project** in the IBM Cloud Console.
-2. Select **Applications** and click **Create**.
-3. Set the configuration details:
-   - **Name:** `venturemind-frontend`
-   - **Choose how to run your code:** Select **Source code**.
-   - **Code repo URL:** Enter your GitHub repository URL.
-   - Click **Specify build details**:
-     - **Branch name:** `main`
-     - **Context directory:** `frontend/` (Crucial: this points Code Engine to the React app).
-     - **Dockerfile:** `Dockerfile`
-     - Click **Next** → **Finish**.
-4. Under **Runtime settings**:
-   - Set **Listening port:** `80` (or the port defined in your `frontend/Dockerfile` Nginx configuration).
-   - Set resources: **0.25 vCPU / 0.5 GB memory**.
-5. Click **Create**.
-6. Once the build completes, open the provided frontend URL in your browser.
-
-**Your VentureMind AI application is now fully deployed and running live on the cloud, 100% free!** 🎉
+1. Log in to **[Vercel.com](https://vercel.com/)** using your GitHub account.
+2. Click **Add New** → **Project**.
+3. Import your `VentureMind-AI` repository.
+4. Configure the Project:
+   - **Framework Preset:** `Vite`
+   - **Root Directory:** Click *Edit* and select the `frontend` folder.
+5. Expand the **Environment Variables** section and add:
+   - **Name:** `VITE_API_URL`
+   - **Value:** Your Render backend URL (e.g., `https://venturemind-backend.onrender.com` — *without a trailing slash*).
+   - **Name:** `VITE_WS_URL`
+   - **Value:** Your Render backend URL but starting with `wss://` instead of `https://` (e.g., `wss://venturemind-backend.onrender.com`).
+6. Click **Deploy**.
+7. Vercel will build your static files and deploy them. Once complete, it will provide your live website link (e.g., `https://venturemind-ai.vercel.app`)!

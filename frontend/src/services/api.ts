@@ -8,7 +8,7 @@ import type {
 } from '@/types'
 
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: (import.meta.env.VITE_API_URL || '') + '/api/v1',
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 })
@@ -61,6 +61,10 @@ export const downloadPdf = async (startupId: string): Promise<Blob> => {
 // ── WebSocket ─────────────────────────────────────────────────────────────────
 
 export const createProgressWebSocket = (startupId: string): WebSocket => {
+  const wsBase = import.meta.env.VITE_WS_URL
+  if (wsBase) {
+    return new WebSocket(`${wsBase}/api/v1/ws/${startupId}`)
+  }
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   const host = window.location.hostname
   const port = import.meta.env.DEV ? '8000' : window.location.port

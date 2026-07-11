@@ -11,7 +11,8 @@ Watson Discovery has been removed — no Lite/free plan available.
 """
 
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, Any
+from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -21,6 +22,19 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     API_PREFIX: str = "/api/v1"
     ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v: Any) -> list[str]:
+        if isinstance(v, str):
+            if v.startswith("[") and v.endswith("]"):
+                import json
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
     # ── PostgreSQL Database ───────────────────────────────────────────────────
     DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/venturemind"
