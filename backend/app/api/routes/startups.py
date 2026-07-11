@@ -125,6 +125,10 @@ async def get_startup_status(
         "id": str(startup.id),
         "status": startup.status,
         "idea_text": startup.idea_text,
+        "industry": startup.industry,
+        "target_audience": startup.target_audience,
+        "country": startup.country,
+        "budget": startup.budget,
         "created_at": startup.created_at.isoformat(),
         "updated_at": startup.updated_at.isoformat(),
         "agents": [

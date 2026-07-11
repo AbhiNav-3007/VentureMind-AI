@@ -303,6 +303,88 @@ pytest -v
 
 ---
 
+---
+
+## Future Technical Roadmap: Scaling to JWT Authentication 🛡️
+
+To transition VentureMind AI from a public showcase application to a secure multi-tenant SaaS platform, the next architectural milestone is implementing **role-based user authentication** to isolate and secure blueprint generation history.
+
+### Proposed Security Architecture: Supabase Auth & JWT Integration
+
+```mermaid
+sequenceDiagram
+    participant User as Frontend Client
+    participant Auth as Supabase Auth
+    participant BE as FastAPI Backend
+    participant DB as PostgreSQL DB
+
+    User->>Auth: Signup/Login (Email/OAuth)
+    Auth-->>User: Return JWT Access Token
+    User->>BE: GET /api/v1/startups (Header: Bearer <JWT>)
+    BE->>BE: Verify Signature & Expiry (using Supabase JWKS)
+    BE->>DB: SELECT * FROM startup_ideas WHERE user_id = token.sub
+    DB-->>BE: User's Private Records
+    BE-->>User: Display User-Specific History
+```
+
+#### 1. Database Migration
+Modify the `startup_ideas` table to link records to a user entity:
+```sql
+ALTER TABLE startup_ideas 
+ADD COLUMN user_id UUID NOT NULL,
+ADD CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+```
+
+#### 2. Backend JWT Validation (FastAPI)
+Implement a FastAPI security dependency that verifies the signature of the incoming `Authorization: Bearer <token>` header:
+```python
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import jwt
+
+security = HTTPBearer()
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+    token = credentials.credentials
+    try:
+        # Decodes the JWT token using Supabase public signing keys
+        payload = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"], audience="authenticated")
+        return payload["sub"] # Returns unique User UUID
+    except jwt.PyJWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired access token",
+        )
+```
+
+#### 3. Secure Endpoint Filtering
+Inject the security dependency into the routes to enforce data isolation:
+```python
+@router.get("/")
+async def list_user_blueprints(
+    current_user_id: str = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(StartupIdea).where(StartupIdea.user_id == uuid.UUID(current_user_id))
+    )
+    return result.scalars().all()
+```
+
+#### 4. React Session Interceptor (Frontend)
+Use the `@supabase/supabase-js` SDK to handle credentials and configure Axios to automatically append the JWT token to requests:
+```typescript
+api.interceptors.request.use(async (config) => {
+  const session = supabase.auth.session();
+  if (session?.access_token) {
+    config.headers.Authorization = `Bearer ${session.access_token}`;
+  }
+  return config;
+});
+```
+
+---
+
 ## License
 
 MIT — Developed as part of the IBM SkillsBuild Internship Program.

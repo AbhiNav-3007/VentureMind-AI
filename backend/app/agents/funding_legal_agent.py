@@ -114,7 +114,7 @@ class FundingLegalAgent:
         )
         rag_context = await self.rag.retrieve(
             f"Startup India MSME funding government schemes {domain} legal compliance registration",
-            n_results=6,
+            n_results=3,
         )
         tl.complete_reasoning_step(1, f"RAG returned {len(rag_context)} chars of scheme data")
         tl.complete_tool_event(rag_event, f"RAG returned {len(rag_context)} chars")
@@ -143,7 +143,7 @@ class FundingLegalAgent:
         raw = await self.client.generate_structured(
             system_prompt=FUNDING_SYSTEM_PROMPT,
             user_prompt=user_prompt,
-            max_new_tokens=800,
+            max_new_tokens=550,
             temperature=0.35,
         )
         tl.complete_tool_event(granite_event, f"Generated {len(raw)} char funding report", tokens=len(raw) // 4)
@@ -200,7 +200,7 @@ class FundingLegalAgent:
         if disc_texts:
             parts.append(f"\n[Watson Discovery Policy Documents]\n" + "\n".join(disc_texts[:4])[:2000])
         if rag_context:
-            parts.append(f"\n[RAG Knowledge Base]\n{rag_context[:1200]}")
+            parts.append(f"\n[RAG Knowledge Base]\n{rag_context[:800]}")
         parts.append("\nGenerate the complete funding and legal report. Include the scheme names found above.")
         return "\n".join(parts)
 

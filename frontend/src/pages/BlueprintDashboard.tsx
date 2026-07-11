@@ -11,7 +11,7 @@ import {
   Activity, Lightbulb, Globe, Zap, CheckCircle2,
   TrendingDown, Info, ArrowRight, Clock
 } from 'lucide-react'
-import { getBlueprint } from '@/services/api'
+import { getBlueprint, getStartupStatus } from '@/services/api'
 import { useStore } from '@/store'
 import type { Blueprint, RoadmapItem, RiskItem } from '@/types'
 
@@ -753,7 +753,32 @@ export default function BlueprintDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate(`/agents/${startupId}`)} className="btn-ghost text-xs">
+            <button
+              onClick={() => {
+                if (startupId) {
+                  getStartupStatus(startupId)
+                    .then((startup) => {
+                      navigate('/submit', {
+                        state: {
+                          prefill: {
+                            idea: startup.idea_text,
+                            industry: startup.industry,
+                            target_audience: startup.target_audience,
+                            country: startup.country,
+                            budget: startup.budget,
+                          },
+                        },
+                      });
+                    })
+                    .catch(() => {
+                      navigate('/submit');
+                    });
+                } else {
+                  navigate('/submit');
+                }
+              }}
+              className="btn-ghost text-xs"
+            >
               <RefreshCw className="w-3.5 h-3.5" /> Regenerate
             </button>
             <button onClick={() => navigate(`/export/${startupId}`)} className="btn-primary py-1.5 px-4 text-xs">

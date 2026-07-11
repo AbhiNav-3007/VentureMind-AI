@@ -141,7 +141,7 @@ class PlannerAgent:
         raw = await self.client.generate_structured(
             system_prompt=PLANNER_SYSTEM_PROMPT,
             user_prompt=user_prompt,
-            max_new_tokens=800,
+            max_new_tokens=400,
             temperature=0.35,
         )
         tl.complete_tool_event(granite_event, f"Generated {len(raw)} char plan", tokens=len(raw) // 4)
@@ -214,7 +214,7 @@ STRATEGY & REPORT OUTPUT:
             raw = await self.client.generate_structured(
                 system_prompt=PLANNER_VALIDATION_PROMPT,
                 user_prompt=f"Startup Context:\n{planner_output.get('idea_summary', '')}\n\nAgent Outputs:\n{outputs_summary}\n\nPerform validation.",
-                max_new_tokens=500,
+                max_new_tokens=300,
                 temperature=0.2,
             )
             data = safe_parse_json(raw, default={})

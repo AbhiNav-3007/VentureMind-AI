@@ -63,8 +63,13 @@ export default function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    listBlueprints(10, 0)
-      .then((data) => setBlueprints(data.items ?? []))
+    const myIds = JSON.parse(localStorage.getItem('my_blueprints') || '[]')
+    listBlueprints(100, 0)
+      .then((data) => {
+        const all = data.items ?? []
+        const filtered = all.filter((bp: any) => myIds.includes(bp.id))
+        setBlueprints(filtered)
+      })
       .catch(console.error)
   }, [])
 

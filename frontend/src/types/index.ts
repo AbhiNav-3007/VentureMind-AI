@@ -31,6 +31,10 @@ export interface StartupStatusResponse {
   created_at: string
   updated_at: string
   agents: AgentStatus[]
+  industry?: string | null
+  target_audience?: string | null
+  country?: string | null
+  budget?: string | null
 }
 
 export interface MarketOverview {

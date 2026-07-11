@@ -25,15 +25,16 @@ Before starting, ensure you have:
 3. Choose a project name (e.g., `VentureMind-DB`), set a secure database password, and select a region closest to your users.
 4. Click **Create new project** and wait for the database to provision (takes about 1 minute).
 5. Once ready, go to **Project Settings** (gear icon in the sidebar) → **Database**.
-6. Scroll down to the **Connection string** section and click on the **URI** tab.
+6. Click **Connect** (or go to Database Settings) and select **Session pooler** (which uses port **5432** on the pooler hostname).
+   - *Why: Session pooler resolves to an IPv4 address (resolving Render's free tier IPv6 restriction) and fully supports prepared statements without any driver modifications.*
 7. Copy the connection string. It will look like this:
    ```
-   postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+   postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
    ```
 8. Replace `[YOUR-PASSWORD]` with your actual database password.
 9. Convert the protocol from `postgresql://` to `postgresql+asyncpg://` so that the FastAPI async driver functions correctly:
    ```
-   postgresql+asyncpg://postgres.[YOUR-PROJECT-REF]:your_password@aws-0-[REGION].pooler.supabase.com:6543/postgres
+   postgresql+asyncpg://postgres.[YOUR-PROJECT-REF]:your_password@aws-0-[REGION].pooler.supabase.com:5432/postgres
    ```
 10. Save this database connection string. We will set it as the `DATABASE_URL` environment variable on Render.
 

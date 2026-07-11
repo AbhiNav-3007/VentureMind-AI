@@ -99,7 +99,7 @@ class MarketIntelligenceAgent:
         )
         rag_context = await self.rag.retrieve(
             f"market research {domain} {idea} industry trends competitors customer segments",
-            n_results=5,
+            n_results=3,
         )
         tl.complete_tool_event(rag_event, f"RAG returned {len(rag_context)} chars")
         tl.complete_reasoning_step(1, f"RAG retrieved {len(rag_context)} chars of context")
@@ -122,7 +122,7 @@ class MarketIntelligenceAgent:
         raw = await self.client.generate_structured(
             system_prompt=MARKET_SYSTEM_PROMPT,
             user_prompt=user_prompt,
-            max_new_tokens=800,
+            max_new_tokens=550,
             temperature=0.45,
         )
         tl.complete_tool_event(granite_event, f"Generated {len(raw)} char market report", tokens=len(raw) // 4)
@@ -167,7 +167,7 @@ class MarketIntelligenceAgent:
         if instructions:
             parts.append(f"Planner's Instructions for Market Agent: {instructions}")
         if rag_context:
-            parts.append(f"\n[RAG Knowledge Base]\n{rag_context[:1500]}")
+            parts.append(f"\n[RAG Knowledge Base]\n{rag_context[:800]}")
         parts.append("\nUsing ALL the above data, generate the complete market intelligence report in the specified JSON format.")
         return "\n".join(parts)
 

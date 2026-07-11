@@ -2,7 +2,7 @@
 // Premium dark form with animated idea input
 
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Brain, Send, Lightbulb, ChevronLeft, AlertCircle,
@@ -38,6 +38,7 @@ const features = [
 
 export default function SubmitPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const setStartupId = useStore((s) => s.setStartupId)
   const setWorkflowStatus = useStore((s) => s.setWorkflowStatus)
 
@@ -50,9 +51,26 @@ export default function SubmitPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Prefill state from navigation (e.g. on Re-generate)
   useEffect(() => {
-    listBlueprints(5, 0)
-      .then((data) => setHistory(data.items ?? []))
+    if (location.state?.prefill) {
+      const { idea, industry, target_audience, country, budget } = location.state.prefill
+      if (idea) setIdea(idea)
+      if (industry) setIndustry(industry)
+      if (target_audience) setAudience(target_audience)
+      if (country) setCountry(country)
+      if (budget) setBudget(budget)
+    }
+  }, [location.state])
+
+  useEffect(() => {
+    const myIds = JSON.parse(localStorage.getItem('my_blueprints') || '[]')
+    listBlueprints(50, 0)
+      .then((data) => {
+        const all = data.items ?? []
+        const filtered = all.filter((bp: any) => myIds.includes(bp.id)).slice(0, 5)
+        setHistory(filtered)
+      })
       .catch(console.error)
   }, [])
 
@@ -72,6 +90,11 @@ export default function SubmitPage() {
         country: country || 'India',
         budget: budget || undefined,
       })
+
+      // Save to localStorage for Solution 1 user-based history
+      const existing = JSON.parse(localStorage.getItem('my_blueprints') || '[]')
+      localStorage.setItem('my_blueprints', JSON.stringify([resp.startup_id, ...existing]))
+
       setStartupId(resp.startup_id)
       setWorkflowStatus('pending')
       navigate(`/agents/${resp.startup_id}`)

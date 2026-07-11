@@ -404,7 +404,6 @@ export default function AgentDashboard() {
           setWorkflowStatus('done')
           if ((event as any).validation) setValidation((event as any).validation)
           addLog(`✓ All agents complete! Quality score: ${(event as any).validation?.quality_score ?? 'N/A'}/10`)
-          setTimeout(() => navigate(`/blueprint/${startupId}`), 2000)
         }
 
         if (event.event === 'error') {
@@ -424,11 +423,7 @@ export default function AgentDashboard() {
     logsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [logs])
 
-  useEffect(() => {
-    if (workflowStatus === 'done' && startupId) {
-      setTimeout(() => navigate(`/blueprint/${startupId}`), 1500)
-    }
-  }, [workflowStatus])
+
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -512,9 +507,17 @@ export default function AgentDashboard() {
               <motion.div className="progress-fill" animate={{ width: `${overallProgress}%` }} transition={{ duration: 0.5 }} />
             </div>
             {workflowStatus === 'done' && (
-              <p className="text-xs text-green-600 font-medium mt-2 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Complete! Redirecting to blueprint…
-              </p>
+              <div className="mt-4 space-y-2 animate-fade-in">
+                <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> All agents completed successfully!
+                </p>
+                <button
+                  onClick={() => navigate(`/blueprint/${startupId}`)}
+                  className="w-full btn-primary text-sm py-2 px-4 flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white border-none"
+                >
+                  View Generated Blueprint <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             )}
           </div>
 
