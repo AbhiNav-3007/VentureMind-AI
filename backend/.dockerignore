@@ -15,6 +15,7 @@ __pycache__/
 # Ignore local database cache or documents
 *.json
 *.txt
+!requirements.txt
 _diag*.py
 print_db.py
 debug_agent_parse.py
