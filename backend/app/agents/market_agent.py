@@ -122,7 +122,7 @@ class MarketIntelligenceAgent:
         raw = await self.client.generate_structured(
             system_prompt=MARKET_SYSTEM_PROMPT,
             user_prompt=user_prompt,
-            max_new_tokens=4096,
+            max_new_tokens=800,
             temperature=0.45,
         )
         tl.complete_tool_event(granite_event, f"Generated {len(raw)} char market report", tokens=len(raw) // 4)

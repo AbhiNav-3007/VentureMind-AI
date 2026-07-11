@@ -109,7 +109,7 @@ class StrategyReportAgent:
         raw = await self.client.generate_structured(
             system_prompt=STRATEGY_SYSTEM_PROMPT,
             user_prompt=user_prompt,
-            max_new_tokens=4096,
+            max_new_tokens=900,
             temperature=0.50,
         )
         tl.complete_tool_event(granite_event, f"Generated {len(raw)} char strategy report", tokens=len(raw) // 4)

@@ -190,7 +190,7 @@ class BusinessFinanceAgent:
         raw = await self.client.generate_structured(
             system_prompt=BUSINESS_SYSTEM_PROMPT,
             user_prompt=user_prompt,
-            max_new_tokens=4096,
+            max_new_tokens=800,
             temperature=0.38,
         )
         tl.complete_tool_event(granite_event, f"Generated {len(raw)} char business plan", tokens=len(raw) // 4)

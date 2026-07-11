@@ -143,7 +143,7 @@ class FundingLegalAgent:
         raw = await self.client.generate_structured(
             system_prompt=FUNDING_SYSTEM_PROMPT,
             user_prompt=user_prompt,
-            max_new_tokens=4096,
+            max_new_tokens=800,
             temperature=0.35,
         )
         tl.complete_tool_event(granite_event, f"Generated {len(raw)} char funding report", tokens=len(raw) // 4)
