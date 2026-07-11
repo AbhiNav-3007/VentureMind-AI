@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     API_PREFIX: str = "/api/v1"
-    ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    ALLOWED_ORIGINS: Any = ["http://localhost:5173", "http://localhost:3000"]
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
