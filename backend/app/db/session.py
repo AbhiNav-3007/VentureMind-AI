@@ -7,9 +7,15 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
 
+# Create database URL and append pgBouncer parameters if not present
+database_url = settings.DATABASE_URL
+if "prepared_statement_name" not in database_url:
+    separator = "&" if "?" in database_url else "?"
+    database_url += f"{separator}prepared_statement_name="
+
 # Create async engine
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    database_url,
     pool_size=settings.DATABASE_POOL_SIZE,
     max_overflow=settings.DATABASE_MAX_OVERFLOW,
     echo=settings.DEBUG,
