@@ -1,0 +1,32 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
+node_modules/
+dist/
+build/
+venv/
+.venv/
+env/
+*.egg-info/
+.pytest_cache/
+.eslintcache
+
+# ── Secrets & Configuration ───────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.private
+
+# ── Python Cache ──────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ── Diagnostic & Temporary Files ──────────────────────────────────────────────
+backend/_diag*.py
+backend/print_db.py
+backend/debug_agent_parse.py
+backend/test_real_run.py
+backend/db_output.json
+backend/debug_business_output.txt
+.DS_Store
+Thumbs.db

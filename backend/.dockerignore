@@ -1,0 +1,28 @@
+# Ignore local environments & credentials
+.env
+.env.*
+.git
+
+# Ignore python libraries & virtual environment
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore local database cache or documents
+*.json
+*.txt
+_diag*.py
+print_db.py
+debug_agent_parse.py
+test_real_run.py
+db_output.json
+debug_business_output.txt
+*.log
+
+# Ignore IDE settings
+.vscode/
+.idea/
