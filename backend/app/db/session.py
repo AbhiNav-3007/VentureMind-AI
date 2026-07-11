@@ -14,6 +14,7 @@ engine = create_async_engine(
     max_overflow=settings.DATABASE_MAX_OVERFLOW,
     echo=settings.DEBUG,
     future=True,
+    connect_args={"prepared_statement_name": ""},
 )
 
 # Session factory
